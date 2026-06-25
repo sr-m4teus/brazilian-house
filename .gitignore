@@ -1,17 +1,46 @@
-# deps
-node_modules/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
 
 # next.js
-.next/
-out/
-build/
+/.next/
+/out/
 
-# env
+# production
+/build
+
+# misc
+.DS_Store
+Thumbs.db
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files — only ignore secrets, NOT .env.example
 .env
 .env*.local
 
 # vercel
-.vercel/
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
 
 # supabase
 .branches/
@@ -22,7 +51,3 @@ build/
 
 # claude code local config
 .claude/
-
-# os / editor
-.DS_Store
-Thumbs.db
