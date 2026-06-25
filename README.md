@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Brazilian House — CWL Stats
 
-## Getting Started
+A site that captures Clash of Clans Clan War League (CWL) per-player attack/defense/Town-Hall stats for the Brazilian House clans (slots 1–3) into Supabase, and shows per-clan/season dashboards and per-player career pages.
 
-First, run the development server:
+**Tech stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS v4 · Supabase (Postgres + Auth) · Vercel (hosting + Cron) · RoyaleAPI proxy (stable IP for the CoC API)
+
+---
+
+## Local Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # then fill in values (see below)
+npm run dev                  # http://localhost:3000
+npm run test                 # Vitest unit tests
+npm run build                # production build check
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.example` to `.env.local` and fill in each value:
 
-## Learn More
+| Variable | Description |
+|---|---|
+| `COC_API_TOKEN` | Clash of Clans API token. The token's allowed IP **must** be `45.79.218.79` (the RoyaleAPI proxy IP), because Vercel uses dynamic IPs. Create the token at [developer.clashofclans.com](https://developer.clashofclans.com). |
+| `COC_API_BASE` | Base URL for the CoC API. Defaults to `https://proxy.royaleapi.dev/v1` (the RoyaleAPI proxy). |
+| `CLAN_1_TAG` | Tag for Brazilian House clan slot 1. Note: CoC tags use the digit `0`, never the letter `O`. |
+| `CLAN_2_TAG` | Tag for Brazilian House clan slot 2. |
+| `CLAN_3_TAG` | Tag for Brazilian House clan slot 3. |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (used in the browser for public reads). |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key (public reads; safe to expose). |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role key (server-only writes). **Never expose this to the browser.** |
+| `CRON_SECRET` | Shared secret that guards `/api/cron`. Set the same value in Vercel project settings so the Vercel cron scheduler is authorized to call the route. |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Database Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Run `supabase/migrations/0001_init.sql` in the Supabase SQL editor (or via `supabase db push`).
 
-## Deploy on Vercel
+This migration creates the tables, RLS read policies, and seeds the 3 Brazilian House clans.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Admin User
+
+Create one user (email + password) in the Supabase Auth dashboard. There is no public signup.
+
+Log in at `/admin/login` to access the `/admin` page, which exposes a force-refresh button and capture run status.
+
+---
+
+## Deploy to Vercel
+
+1. Import the GitHub repository in the [Vercel dashboard](https://vercel.com/new).
+2. Add all environment variables listed above in **Project Settings → Environment Variables**.
+3. Deploy.
+
+The cron defined in `vercel.json` runs `/api/cron` daily at **09:00 UTC on days 1–12 of each month** (the CWL window). Vercel automatically sends `Authorization: Bearer $CRON_SECRET` to the route.
+
+You can also trigger a capture manually:
+- From the **Vercel dashboard → Cron** tab.
+- From the **`/admin`** page using the force-refresh button.
+
+---
+
+## How Capture Works
+
+During CWL, the daily cron fetches each clan's league group and wars via the RoyaleAPI proxy, aggregates per-player attack/defense/Town-Hall stats, and upserts a season snapshot into Supabase (idempotent — safe to re-run). The league group only exists while CWL is active, which is why the capture runs daily during the window rather than once.
