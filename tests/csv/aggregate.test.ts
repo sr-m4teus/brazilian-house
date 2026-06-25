@@ -4,7 +4,7 @@ import type { AttackRow } from "../../src/lib/csv/parse";
 
 function row(p: Partial<AttackRow>): AttackRow {
   return {
-    tag: "#X", name: "X", rank: 1, thLevel: 18, warID: 1,
+    tag: "#X", name: "X", rank: 1, thLevel: 18, warID: 1, order: 1,
     stars: 0, newStars: 0, destructionPercentage: 0,
     defenderTag: "#D", defenderName: "D", defenderRank: 1, defenderTH: 18,
     attackerIsHomeClan: 1, homeClanTag: "#90YVJJC8",

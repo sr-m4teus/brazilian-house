@@ -1,13 +1,13 @@
 "use server";
 import { parseAttacksCsv } from "../../lib/csv/parse";
 import { aggregate } from "../../lib/csv/aggregate";
-import { persistSnapshot } from "../../lib/db/snapshots";
+import { insertAttacks } from "../../lib/db/attacks";
 
 export interface UploadResult {
   fileName: string;
   clanTag?: string;
   seasons: string[];
-  players: number;
+  attacks: number;
   status: "ok" | "error";
   message?: string;
 }
@@ -18,27 +18,22 @@ export async function uploadCsv(formData: FormData): Promise<UploadResult[]> {
 
   for (const file of files) {
     try {
-      const text = await file.text();
-      const snaps = aggregate(parseAttacksCsv(text));
-      if (snaps.length === 0) throw new Error("sem guerras de liga no arquivo");
-
-      let players = 0;
-      for (const s of snaps) {
-        await persistSnapshot(s.seasonKey, s.snapshot, null);
-        players += s.snapshot.players.length;
-      }
+      const rows = parseAttacksCsv(await file.text());
+      const attacks = await insertAttacks(rows);
+      const seasons = aggregate(rows).map((s) => s.seasonKey); // feedback only
       results.push({
         fileName: file.name,
-        clanTag: snaps[0].snapshot.clanTag,
-        seasons: snaps.map((s) => s.seasonKey),
-        players,
+        clanTag: rows[0]?.homeClanTag,
+        seasons,
+        attacks,
         status: "ok",
+        message: seasons.length === 0 ? "sem guerras de liga (linhas cruas salvas)" : undefined,
       });
     } catch (e) {
       results.push({
         fileName: file.name,
         seasons: [],
-        players: 0,
+        attacks: 0,
         status: "error",
         message: (e as Error).message,
       });

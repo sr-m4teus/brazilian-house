@@ -6,6 +6,7 @@ export interface AttackRow {
   rank: number;
   thLevel: number;
   warID: number;
+  order: number;
   stars: number;
   newStars: number;
   destructionPercentage: number;
@@ -20,7 +21,7 @@ export interface AttackRow {
 }
 
 const REQUIRED = [
-  "tag", "name", "rank", "thLevel", "warID", "stars", "new_stars",
+  "tag", "name", "rank", "thLevel", "warID", "order_", "stars", "new_stars",
   "destructionPercentage", "defenderTag", "defenderName", "defenderRank",
   "defenderTH", "attacker_is_home_clan", "home_clan_tag", "war_start_time", "type",
 ];
@@ -42,6 +43,7 @@ export function parseAttacksCsv(text: string): AttackRow[] {
     rank: Number(r.rank),
     thLevel: Number(r.thLevel),
     warID: Number(r.warID),
+    order: Number(r.order_),
     stars: Number(r.stars),
     newStars: Number(r.new_stars),
     destructionPercentage: Number(r.destructionPercentage),
