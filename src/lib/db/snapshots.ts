@@ -1,4 +1,4 @@
-import type { ClanSeasonSnapshot, PlayerSeasonStats } from "../coc/types";
+import type { ClanSeasonSnapshot, PlayerSeasonStats } from "../types";
 import { serviceClient } from "./supabase";
 import { seasonLabel } from "../coc/season";
 
