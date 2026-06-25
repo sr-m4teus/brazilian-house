@@ -64,12 +64,14 @@ alter table seasons enable row level security;
 alter table players enable row level security;
 alter table season_clans enable row level security;
 alter table player_season_stats enable row level security;
+alter table cron_runs enable row level security;
 
 create policy "public read clans" on clans for select using (true);
 create policy "public read seasons" on seasons for select using (true);
 create policy "public read players" on players for select using (true);
 create policy "public read season_clans" on season_clans for select using (true);
 create policy "public read pss" on player_season_stats for select using (true);
+create policy "public read cron_runs" on cron_runs for select using (true);
 
 insert into clans (tag, name, slot) values
   ('#90YVJJC8', 'Brazilian House 1', 1),
