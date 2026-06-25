@@ -3,6 +3,7 @@ import {
   dashboardFromSnapshots,
   seasonsFromSnapshots,
   careerFromSnapshots,
+  weightedScore,
 } from "../../src/lib/db/reads";
 import type { SeasonSnapshot } from "../../src/lib/csv/aggregate";
 import type { PlayerSeasonStats } from "../../src/lib/types";
@@ -57,6 +58,32 @@ describe("dashboardFromSnapshots", () => {
 
   it("returns null when the season is absent", () => {
     expect(dashboardFromSnapshots(clan, "2099-01-01", snaps)).toBeNull();
+  });
+
+  it("orders players by weighted score (80% attack, 20% defense)", () => {
+    const ranked: SeasonSnapshot[] = [
+      {
+        seasonKey: "2026-06-19",
+        snapshot: {
+          clanTag: "#90YVJJC8", totalStars: 21, totalAttacks: 14, totalDestruction: 90,
+          players: [
+            // strong defender, weak attacker -> 0.8*1 + 0.2*3 = 1.4
+            player({ tag: "#DEF", name: "Def", mapPosition: 1, stars: 7, defensiveStars: 21 }),
+            // strong attacker, no defense -> 0.8*2 + 0.2*0 = 1.6
+            player({ tag: "#ATK", name: "Atk", mapPosition: 2, stars: 14, defensiveStars: 0 }),
+          ],
+        },
+      },
+    ];
+    const d = dashboardFromSnapshots(clan, "2026-06-19", ranked)!;
+    expect(d.players.map((p) => p.tag)).toEqual(["#ATK", "#DEF"]);
+  });
+});
+
+describe("weightedScore", () => {
+  it("weights attack 80% and defense 20%, normalized per 7", () => {
+    expect(weightedScore(14, 0)).toBeCloseTo(1.6, 5); // 0.8 * 14/7
+    expect(weightedScore(0, 7)).toBeCloseTo(0.2, 5); // 0.2 * 7/7
   });
 });
 

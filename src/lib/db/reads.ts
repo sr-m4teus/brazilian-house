@@ -39,6 +39,14 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+// A CWL league gives each player up to 7 attacks (and up to 7 defenses).
+const ATTACKS_PER_LEAGUE = 7;
+
+/** Ranking score: 80% attack stars, 20% denied-defense stars, per-7 normalized. */
+export function weightedScore(stars: number, defensiveStars: number): number {
+  return 0.8 * (stars / ATTACKS_PER_LEAGUE) + 0.2 * (defensiveStars / ATTACKS_PER_LEAGUE);
+}
+
 function groupByClan(rows: AttackRow[]): Map<string, AttackRow[]> {
   const byClan = new Map<string, AttackRow[]>();
   for (const r of rows) {
@@ -80,6 +88,10 @@ export function dashboardFromSnapshots(
     defenses: p.defenses,
     defensive_stars: p.defensiveStars,
   }));
+  players.sort(
+    (a, b) =>
+      weightedScore(b.stars, b.defensive_stars) - weightedScore(a.stars, a.defensive_stars),
+  );
   return {
     clan,
     season: { key: seasonKey, label: seasonLabel(seasonKey) },
