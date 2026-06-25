@@ -40,7 +40,7 @@ export function UploadForm() {
             <li key={i} className={r.status === "ok" ? "text-clash-text" : "text-red-400"}>
               {r.fileName}:{" "}
               {r.status === "ok"
-                ? `${r.clanTag} · ${r.seasons.join(", ")} · ${r.players} jogadores`
+                ? `${r.clanTag} · ${r.seasons.join(", ") || "sem liga"} · ${r.attacks} ataques`
                 : r.message}
             </li>
           ))}
