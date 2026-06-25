@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   if (!req.nextUrl.pathname.startsWith("/admin")) return NextResponse.next();
 
   const res = NextResponse.next();

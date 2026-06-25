@@ -61,42 +61,51 @@ export function buildUpsertOps(seasonKey: string, snap: ClanSeasonSnapshot): Ups
 }
 
 /** Persist one clan's season snapshot. Idempotent (upserts on unique keys). */
-export async function persistSnapshot(seasonKey: string, snap: ClanSeasonSnapshot): Promise<void> {
+export async function persistSnapshot(
+  seasonKey: string,
+  snap: ClanSeasonSnapshot,
+  rank: number | null = null,
+): Promise<void> {
   const db = serviceClient();
   const ops = buildUpsertOps(seasonKey, snap);
 
   // season
-  const { data: season } = await db
+  const { data: season, error: seasonErr } = await db
     .from("seasons")
     .upsert({ key: seasonKey, label: seasonLabel(seasonKey) }, { onConflict: "key" })
     .select("id")
     .single();
+  if (seasonErr) throw seasonErr;
 
   // clan
-  const { data: clan } = await db
+  const { data: clan, error: clanErr } = await db
     .from("clans")
     .select("id")
     .eq("tag", snap.clanTag)
     .single();
+  if (clanErr) throw clanErr;
   if (!season || !clan) throw new Error("season or clan row missing");
 
   // season_clan
-  const { data: sc } = await db
+  const { data: sc, error: scErr } = await db
     .from("season_clans")
     .upsert(
-      { season_id: season.id, clan_id: clan.id, ...ops.seasonClan, fetched_at: new Date().toISOString() },
+      { season_id: season.id, clan_id: clan.id, ...ops.seasonClan, rank, fetched_at: new Date().toISOString() },
       { onConflict: "season_id,clan_id" },
     )
     .select("id")
     .single();
+  if (scErr) throw scErr;
   if (!sc) throw new Error("season_clan upsert failed");
 
   // players (upsert by tag, keep latest name)
-  await db.from("players").upsert(ops.players, { onConflict: "tag" });
-  const { data: playerRows } = await db
+  const { error: playersErr } = await db.from("players").upsert(ops.players, { onConflict: "tag" });
+  if (playersErr) throw playersErr;
+  const { data: playerRows, error: prErr } = await db
     .from("players")
     .select("id, tag")
     .in("tag", ops.players.map((p) => p.tag));
+  if (prErr) throw prErr;
   const idByTag = new Map((playerRows ?? []).map((r) => [r.tag, r.id]));
 
   // player_season_stats
@@ -105,7 +114,8 @@ export async function persistSnapshot(seasonKey: string, snap: ClanSeasonSnapsho
     player_id: idByTag.get(tag),
     ...rest,
   }));
-  await db
+  const { error: pssErr } = await db
     .from("player_season_stats")
     .upsert(rows, { onConflict: "season_clan_id,player_id" });
+  if (pssErr) throw pssErr;
 }
