@@ -1,0 +1,28 @@
+# deps
+node_modules/
+
+# next.js
+.next/
+out/
+build/
+
+# env
+.env
+.env*.local
+
+# vercel
+.vercel/
+
+# supabase
+.branches/
+.temp/
+
+# brainstorm companion (local only)
+.superpowers/
+
+# claude code local config
+.claude/
+
+# os / editor
+.DS_Store
+Thumbs.db
