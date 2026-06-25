@@ -4,7 +4,6 @@ import { SummaryCards } from "../../../../components/SummaryCards";
 import { PlayerTable } from "../../../../components/PlayerTable";
 import { ClanTabs } from "../../../../components/ClanTabs";
 import { SeasonSelect } from "../../../../components/SeasonSelect";
-import { RefreshButton } from "../../../../components/RefreshButton";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +26,6 @@ export default async function DashboardPage({
       <div className="flex gap-2 items-center flex-wrap mb-4">
         <ClanTabs clans={clans} activeSlot={slot} seasonKey={season} />
         <SeasonSelect seasons={seasons} activeKey={season} slot={slot} />
-        <RefreshButton />
       </div>
       <SummaryCards totals={data.totals} />
       <div className="bg-clash-card border border-clash-border rounded-lg p-3">

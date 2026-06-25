@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildUpsertOps } from "../../src/lib/db/snapshots";
-import type { ClanSeasonSnapshot } from "../../src/lib/coc/types";
+import type { ClanSeasonSnapshot } from "../../src/lib/types";
 
 const snap: ClanSeasonSnapshot = {
   clanTag: "#90YVJJC8",
