@@ -65,15 +65,13 @@ export function mapSeason(wars: RawCwlWar[], clanTag: string): ClanSeasonSnapsho
         else stats.zeroStars += 1;
       }
 
-      if (m.opponentAttacks > 0) {
+      if (m.bestOpponentAttack) {
         stats.defenses += 1;
-        if (m.bestOpponentAttack) {
-          stats.defensiveStars += m.bestOpponentAttack.stars;
-          defDestSum.set(
-            m.tag,
-            (defDestSum.get(m.tag) ?? 0) + m.bestOpponentAttack.destructionPercentage,
-          );
-        }
+        stats.defensiveStars += m.bestOpponentAttack.stars;
+        defDestSum.set(
+          m.tag,
+          (defDestSum.get(m.tag) ?? 0) + m.bestOpponentAttack.destructionPercentage,
+        );
       }
 
       byTag.set(m.tag, stats);

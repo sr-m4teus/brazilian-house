@@ -28,12 +28,17 @@ describe("mapSeason", () => {
 
     expect(snap.totalStars).toBe(5);
     expect(snap.totalAttacks).toBe(2);
+    expect(snap.totalDestruction).toBe(95.5);
   });
 
   it("picks our clan whether it is on the clan or opponent side", () => {
     const swapped = { ...(war1 as RawCwlWar), clan: (war1 as RawCwlWar).opponent, opponent: (war1 as RawCwlWar).clan };
     const snap = mapSeason([swapped as RawCwlWar], "#OURCLAN");
     expect(snap.players).toHaveLength(2);
+
+    const p1 = snap.players.find((p) => p.tag === "#P1")!;
+    expect(p1.stars).toBe(3);
+    expect(p1.townhallLevel).toBe(16);
   });
 
   it("counts a missed attack when a roster member did not attack", () => {
