@@ -16,6 +16,7 @@ describe("parseAttacksCsv", () => {
     const rows = parseAttacksCsv(`${bom}${HEADER}\n${row}\n`);
     expect(rows).toHaveLength(1);
     expect(rows[0].tag).toBe("#A");
+    expect(rows[0].order).toBe(1);
     expect(rows[0].name).toBe(",Garou'");
     expect(rows[0].stars).toBe(3);
     expect(rows[0].newStars).toBe(1);
