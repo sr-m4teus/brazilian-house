@@ -113,10 +113,12 @@ function buildSnapshot(rows: AttackRow[]): ClanSeasonSnapshot {
 
   for (const a of acc.values()) {
     const defenses = a.bestDef.size;
-    let defStars = 0;
+    // Stars denied: each defended war is worth 3 possible stars; subtract the
+    // best stars the opponent actually scored.
+    let defStarsDenied = 0;
     let defDestSum = 0;
     for (const b of a.bestDef.values()) {
-      defStars += b.stars;
+      defStarsDenied += 3 - b.stars;
       defDestSum += b.dest;
     }
     const attacksAvailable = a.wars.size;
@@ -135,7 +137,7 @@ function buildSnapshot(rows: AttackRow[]): ClanSeasonSnapshot {
       zeroStars: a.zeroStars,
       missed: Math.max(0, attacksAvailable - a.attacksUsed),
       defenses,
-      defensiveStars: defStars,
+      defensiveStars: defStarsDenied,
       defensiveDestruction: defenses > 0 ? round2(defDestSum / defenses) : 0,
     });
     totalStars += a.stars;

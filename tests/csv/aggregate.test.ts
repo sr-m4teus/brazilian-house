@@ -46,7 +46,7 @@ describe("aggregate", () => {
     expect(p1.attacksAvailable).toBe(2);
     expect(p1.missed).toBe(0);
     expect(p1.defenses).toBe(1);
-    expect(p1.defensiveStars).toBe(1);
+    expect(p1.defensiveStars).toBe(2); // denied: 3 - 1 conceded
     expect(p1.defensiveDestruction).toBe(50);
 
     const p2 = june.players.find((p) => p.tag === "#P2")!;
@@ -55,7 +55,7 @@ describe("aggregate", () => {
     expect(p2.attacksAvailable).toBe(2); // attacked in war1, defended in war2
     expect(p2.missed).toBe(1);
     expect(p2.defenses).toBe(1);
-    expect(p2.defensiveStars).toBe(2);
+    expect(p2.defensiveStars).toBe(1); // denied: 3 - 2 conceded
 
     expect(june.totalStars).toBe(5);
     expect(june.totalAttacks).toBe(3);
