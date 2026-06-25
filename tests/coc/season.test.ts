@@ -10,6 +10,10 @@ describe("season helpers", () => {
     expect(seasonLabel("2026-06")).toBe("Liga 06/2026");
   });
 
+  it("formats a date-keyed league label", () => {
+    expect(seasonLabel("2026-06-19")).toBe("Liga 19/06/2026");
+  });
+
   it("is in CWL window on days 1-12", () => {
     expect(isCwlWindow(new Date("2026-06-03T00:00:00Z"))).toBe(true);
     expect(isCwlWindow(new Date("2026-06-12T00:00:00Z"))).toBe(true);

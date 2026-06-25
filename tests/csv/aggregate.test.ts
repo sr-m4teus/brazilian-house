@@ -28,13 +28,13 @@ describe("aggregate", () => {
     row({ warID: 4, tag: "#P1", name: "P1", rank: 1, stars: 3, destructionPercentage: 100, warStartTime: "2026-07-02 10:00:00" }),
   ];
 
-  it("produces one snapshot per league season month", () => {
+  it("keys each league by its start date", () => {
     const snaps = aggregate(rows);
-    expect(snaps.map((s) => s.seasonKey).sort()).toEqual(["2026-06", "2026-07"]);
+    expect(snaps.map((s) => s.seasonKey).sort()).toEqual(["2026-06-01", "2026-07-02"]);
   });
 
   it("aggregates June offense, defense, and missed attacks", () => {
-    const june = aggregate(rows).find((s) => s.seasonKey === "2026-06")!.snapshot;
+    const june = aggregate(rows).find((s) => s.seasonKey === "2026-06-01")!.snapshot;
     expect(june.clanTag).toBe("#90YVJJC8");
 
     const p1 = june.players.find((p) => p.tag === "#P1")!;
@@ -63,9 +63,27 @@ describe("aggregate", () => {
   });
 
   it("excludes normal wars", () => {
-    const june = aggregate(rows).find((s) => s.seasonKey === "2026-06")!.snapshot;
+    const june = aggregate(rows).find((s) => s.seasonKey === "2026-06-01")!.snapshot;
     const p1 = june.players.find((p) => p.tag === "#P1")!;
     // war 3 (normal) would have added a 3rd attack / 3 stars if not excluded
     expect(p1.attacksUsed).toBe(2);
+  });
+
+  it("splits two leagues in the same month into separate seasons", () => {
+    const twoLeagues: AttackRow[] = [
+      // league A: rounds 06-05, 06-06
+      row({ warID: 10, tag: "#A1", name: "A1", stars: 3, warStartTime: "2026-06-05 03:00:00" }),
+      row({ warID: 11, tag: "#A1", name: "A1", stars: 2, warStartTime: "2026-06-06 03:00:00" }),
+      // 13-day gap -> league B: rounds 06-19, 06-20
+      row({ warID: 20, tag: "#B1", name: "B1", stars: 1, warStartTime: "2026-06-19 09:00:00" }),
+      row({ warID: 21, tag: "#B1", name: "B1", stars: 0, warStartTime: "2026-06-20 09:00:00" }),
+    ];
+    const snaps = aggregate(twoLeagues);
+    expect(snaps.map((s) => s.seasonKey).sort()).toEqual(["2026-06-05", "2026-06-19"]);
+
+    const b = snaps.find((s) => s.seasonKey === "2026-06-19")!.snapshot;
+    expect(b.players.map((p) => p.tag)).toEqual(["#B1"]);
+    expect(b.players[0].attacksUsed).toBe(2);
+    expect(b.players[0].stars).toBe(1);
   });
 });

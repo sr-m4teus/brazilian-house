@@ -5,7 +5,12 @@ export function seasonKey(d: Date): string {
 }
 
 export function seasonLabel(key: string): string {
-  const [y, m] = key.split("-");
+  const parts = key.split("-");
+  if (parts.length === 3) {
+    const [y, m, d] = parts;
+    return `Liga ${d}/${m}/${y}`;
+  }
+  const [y, m] = parts;
   return `Liga ${m}/${y}`;
 }
 

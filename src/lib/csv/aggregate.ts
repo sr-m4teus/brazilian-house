@@ -26,24 +26,33 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+// A CWL league runs consecutive daily rounds. A gap larger than this many days
+// between rounds marks a new league (two leagues can fall in the same month).
+const LEAGUE_GAP_DAYS = 3;
+
+function dayNumber(warStartTime: string): number {
+  return Math.floor(Date.parse(`${warStartTime.slice(0, 10)}T00:00:00Z`) / 86_400_000);
+}
+
 export function aggregate(rows: AttackRow[]): SeasonSnapshot[] {
-  const league = rows.filter((r) => r.type === "league");
-  const bySeason = new Map<string, AttackRow[]>();
+  const league = rows
+    .filter((r) => r.type === "league")
+    .slice()
+    .sort((a, b) => a.warStartTime.localeCompare(b.warStartTime));
+
+  // Cluster rounds into distinct leagues by date gap; key each by its start date.
+  const clusters: { seasonKey: string; rows: AttackRow[] }[] = [];
+  let lastDay: number | null = null;
   for (const r of league) {
-    const key = r.warStartTime.slice(0, 7); // "YYYY-MM"
-    let arr = bySeason.get(key);
-    if (!arr) {
-      arr = [];
-      bySeason.set(key, arr);
+    const day = dayNumber(r.warStartTime);
+    if (lastDay === null || day - lastDay > LEAGUE_GAP_DAYS) {
+      clusters.push({ seasonKey: r.warStartTime.slice(0, 10), rows: [] });
     }
-    arr.push(r);
+    clusters[clusters.length - 1].rows.push(r);
+    lastDay = day;
   }
 
-  const out: SeasonSnapshot[] = [];
-  for (const [seasonKey, seasonRows] of bySeason) {
-    out.push({ seasonKey, snapshot: buildSnapshot(seasonRows) });
-  }
-  return out;
+  return clusters.map((c) => ({ seasonKey: c.seasonKey, snapshot: buildSnapshot(c.rows) }));
 }
 
 function buildSnapshot(rows: AttackRow[]): ClanSeasonSnapshot {
