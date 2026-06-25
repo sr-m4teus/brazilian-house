@@ -1,5 +1,5 @@
 import { lastRuns } from "../../lib/db/runs";
-import { forceRefresh } from "./actions";
+import { UploadForm } from "../../components/UploadForm";
 
 export const dynamic = "force-dynamic";
 
@@ -8,11 +8,7 @@ export default async function AdminPage() {
   return (
     <main className="max-w-2xl mx-auto p-4">
       <h1 className="text-xl font-bold text-clash-gold mb-4">Admin</h1>
-      <form action={async () => { "use server"; await forceRefresh(); }}>
-        <button className="bg-clash-gold text-clash-bg font-bold px-4 py-2 rounded-md mb-6">
-          Forçar atualização agora
-        </button>
-      </form>
+      <UploadForm />
       <h2 className="text-clash-muted uppercase text-xs mb-2">Últimos runs</h2>
       <ul className="space-y-2">
         {runs.map((r, i) => (
